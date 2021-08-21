@@ -1,0 +1,86 @@
+---
+title: "Modelagem interativa da temperatura de ebulição em  função do tempo e da temperatura inicial da água"
+output: flexdashboard::flex_dashboard  
+runtime: shiny
+---
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Entre com os valores da potência do ebulidor e da quantidade de água a ser fervida.
+
+```{r}
+numericInput(inputId = "power",
+             label = "Potência do ebulidor (Watts)",
+             value = 500)
+numericInput(inputId = "mass",
+             label = "Quantidade de água (Litros)",
+             value = 1) 
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Tempo em minutos para a água atingir 100°C.
+
+```{r}
+ftemp <- function(tempo,tempinicial,potencia,massa){
+   Tfinal = 60/4186*potencia*tempo/massa + tempinicial
+   return(Tfinal)
+ }
+
+ft <- function(tempinicial,potencia,massa){
+  tempo = round((4186*massa*(100 - tempinicial))/(60*potencia),2)
+  return(tempo)
+} 
+
+mat <- reactive({
+  tempinicial = seq(10,25) 
+
+  t100 = ft(tempinicial,input$power,input$mass)
+
+  mat = matrix(NA,nrow=16,ncol=16)
+
+  for(i in 1:16){
+    mat[,i] = ftemp(tempo = seq(0,t100[i],l=16), 
+                    tempinicial = tempinicial[i],
+                    potencia = input$power,
+                    #potencia = 500,
+                    massa = input$mass)
+  }
+  rownames(mat) = t100
+  colnames(mat) = tempinicial
+  mat
+})
+
+valueBox(100, icon = "fa-thermometer-full",color='warning')
+```
+
+### Temperatura de ebulição da água em função da temperatura inicial e do tempo" 
+
+```{r}
+
+renderPlot({
+
+
+  library(lattice)
+  wireframe(mat(), 
+            scales=list(arrows=FALSE,
+                        x=list(cex=0.8,rot=-30),
+                        y=list(cex=0.8,rot=30)),
+            #main="Temperatura de ebulição da água \n em função da temperatura inicial e do tempo",
+            xlab=list("Tempo (min.)", 
+                      rot=30), 
+            ylab=list("Temperatura inicial (°C)",rot=320),
+            #panel.3d.wireframe = "panel.3d.contour",
+            zlab=list("Temperatura final (°C)", rot=92), 
+            col.regions=hcl.colors(100),drape=TRUE,
+            par.box=list(col=8)
+            #aspect=c(0.4,1.5)
+            #row.values = seq(0,5.23,l=10),
+            #column.values = seq(10,25)
+  ) 
+})
+
+```
+

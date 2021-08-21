@@ -1,0 +1,1 @@
+Este dashboard foi feito com o intuito de mostrar a modelagem da temperatura de ebulição da água em  função do tempo e da temperatura inicial. A motivação veio da disciplina "Resolução de problemas no contexto da física" do curso de bacharelado em matemática.
